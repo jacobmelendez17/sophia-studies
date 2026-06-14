@@ -1,0 +1,1530 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Petal — Study Cards</title>
+  <style>
+    /* ============== DESIGN TOKENS ==============
+     Palette: cozy scrapbook / postcard pink
+       --paper   #FDF6F0  warm paper background
+       --blush   #FBE3E0  soft card blush
+       --rose     #E8889B  primary rose (accent)
+       --plum    #6E4555  deep ink for text
+       --gold    #D9A566  postage-stamp gold
+       --sage    #9CB58E  "known" green washi
+     Type: "Fraunces" display (serif, characterful) + "Nunito" body (rounded, friendly)
+  */
+    @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=Nunito:wght@400;500;600;700;800&display=swap');
+
+    :root {
+      --paper: #FDF6F0;
+      --blush: #FBE3E0;
+      --rose: #E8889B;
+      --rose-deep: #D26b82;
+      --plum: #6E4555;
+      --plum-soft: #9b7682;
+      --gold: #D9A566;
+      --sage: #9CB58E;
+      --sage-deep: #7d9b6e;
+      --line: #EBCFC8;
+      --shadow: rgba(110, 69, 85, .14);
+      --radius: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    html {
+      -webkit-text-size-adjust: 100%
+    }
+
+    body {
+      font-family: 'Nunito', system-ui, sans-serif;
+      background:
+        radial-gradient(circle at 12% 8%, #fceae4 0, transparent 40%),
+        radial-gradient(circle at 88% 92%, #fbe6ea 0, transparent 42%),
+        var(--paper);
+      color: var(--plum);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    /* subtle dotted scrapbook grid */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background-image: radial-gradient(var(--line) .9px, transparent .9px);
+      background-size: 22px 22px;
+      opacity: .35;
+    }
+
+    .wrap {
+      position: relative;
+      z-index: 1;
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 26px 20px 90px
+    }
+
+    /* ============== HEADER ============== */
+    header.app {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 22px
+    }
+
+    .logo {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      flex: none;
+      background: linear-gradient(150deg, var(--rose), var(--gold));
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-size: 26px;
+      box-shadow: 0 6px 16px var(--shadow);
+      transform: rotate(-4deg);
+    }
+
+    .brand h1 {
+      font-family: 'Fraunces', serif;
+      font-weight: 700;
+      font-size: 30px;
+      letter-spacing: .3px;
+      line-height: 1
+    }
+
+    .brand p {
+      font-size: 13px;
+      color: var(--plum-soft);
+      margin-top: 3px;
+      font-weight: 600;
+      letter-spacing: .4px
+    }
+
+    header.app .spacer {
+      flex: 1
+    }
+
+    /* ============== BUTTONS ============== */
+    button {
+      font-family: inherit;
+      cursor: pointer;
+      border: none;
+      background: none;
+      color: inherit
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-weight: 700;
+      font-size: 15px;
+      padding: 11px 18px;
+      border-radius: 13px;
+      transition: transform .12s, box-shadow .12s, background .15s;
+    }
+
+    .btn:active {
+      transform: translateY(1px)
+    }
+
+    .btn-rose {
+      background: var(--rose);
+      color: #fff;
+      box-shadow: 0 5px 14px rgba(210, 107, 130, .35)
+    }
+
+    .btn-rose:hover {
+      background: var(--rose-deep)
+    }
+
+    .btn-ghost {
+      background: #fff;
+      color: var(--plum);
+      border: 2px solid var(--line)
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--rose);
+      color: var(--rose-deep)
+    }
+
+    .btn-sm {
+      padding: 8px 13px;
+      font-size: 13.5px;
+      border-radius: 11px
+    }
+
+    .btn-icon {
+      width: 40px;
+      height: 40px;
+      padding: 0;
+      justify-content: center;
+      border-radius: 12px
+    }
+
+    /* ============== TABS / BREADCRUMB ============== */
+    .crumb {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      color: var(--plum-soft);
+      margin-bottom: 18px;
+      font-size: 15px;
+      flex-wrap: wrap
+    }
+
+    .crumb a {
+      cursor: pointer;
+      color: var(--rose-deep);
+      text-decoration: none
+    }
+
+    .crumb a:hover {
+      text-decoration: underline
+    }
+
+    /* ============== GRID OF CARDS (decks/folders) ============== */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 18px
+    }
+
+    .tile {
+      position: relative;
+      background: #fff;
+      border-radius: var(--radius);
+      padding: 20px 18px 18px;
+      box-shadow: 0 6px 18px var(--shadow);
+      border: 1px solid #fff;
+      transition: transform .14s, box-shadow .14s;
+      cursor: pointer;
+      min-height: 130px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .tile:hover {
+      transform: translateY(-4px) rotate(-.6deg);
+      box-shadow: 0 12px 26px var(--shadow)
+    }
+
+    .tile .tape {
+      position: absolute;
+      top: -9px;
+      left: 50%;
+      transform: translateX(-50%) rotate(-2deg);
+      width: 78px;
+      height: 20px;
+      background: rgba(233, 136, 155, .4);
+      border-left: 1px dashed rgba(255, 255, 255, .6);
+      border-right: 1px dashed rgba(255, 255, 255, .6);
+    }
+
+    .tile .kind {
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--gold)
+    }
+
+    .tile.folder .kind {
+      color: var(--rose)
+    }
+
+    .tile h3 {
+      font-family: 'Fraunces', serif;
+      font-size: 21px;
+      font-weight: 600;
+      margin: 6px 0 4px;
+      word-break: break-word
+    }
+
+    .tile .meta {
+      font-size: 13px;
+      color: var(--plum-soft);
+      font-weight: 600;
+      margin-top: auto
+    }
+
+    .tile .emoji {
+      font-size: 30px;
+      margin-bottom: 2px
+    }
+
+    .tile .del {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      opacity: 0;
+      width: 28px;
+      height: 28px;
+      border-radius: 9px;
+      background: var(--blush);
+      color: var(--rose-deep);
+      font-weight: 800;
+      display: grid;
+      place-items: center;
+      transition: opacity .12s;
+      font-size: 15px
+    }
+
+    .tile:hover .del {
+      opacity: 1
+    }
+
+    .tile .del:hover {
+      background: var(--rose);
+      color: #fff
+    }
+
+    .new-tile {
+      background: transparent;
+      border: 2.5px dashed var(--line);
+      box-shadow: none;
+      align-items: center;
+      justify-content: center;
+      color: var(--plum-soft);
+      gap: 6px;
+      text-align: center;
+    }
+
+    .new-tile:hover {
+      border-color: var(--rose);
+      color: var(--rose-deep);
+      transform: translateY(-2px)
+    }
+
+    .new-tile .plus {
+      font-size: 30px;
+      line-height: 1
+    }
+
+    .new-tile span {
+      font-weight: 700;
+      font-size: 14px
+    }
+
+    .empty {
+      text-align: center;
+      padding: 50px 20px;
+      color: var(--plum-soft)
+    }
+
+    .empty .big {
+      font-size: 46px;
+      margin-bottom: 8px
+    }
+
+    .empty p {
+      font-weight: 600
+    }
+
+    /* ============== MODAL ============== */
+    .scrim {
+      position: fixed;
+      inset: 0;
+      background: rgba(110, 69, 85, .34);
+      backdrop-filter: blur(3px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      padding: 18px
+    }
+
+    .scrim.on {
+      display: flex
+    }
+
+    .modal {
+      background: var(--paper);
+      border-radius: 22px;
+      width: 100%;
+      max-width: 560px;
+      max-height: 88vh;
+      overflow: auto;
+      box-shadow: 0 20px 50px rgba(110, 69, 85, .35);
+      padding: 26px
+    }
+
+    .modal h2 {
+      font-family: 'Fraunces', serif;
+      font-size: 25px;
+      font-weight: 700;
+      margin-bottom: 4px
+    }
+
+    .modal .sub {
+      color: var(--plum-soft);
+      font-weight: 600;
+      font-size: 14px;
+      margin-bottom: 18px
+    }
+
+    label.field {
+      display: block;
+      font-weight: 700;
+      font-size: 14px;
+      margin: 14px 0 6px
+    }
+
+    input[type=text],
+    input[type=number],
+    textarea,
+    select {
+      width: 100%;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--plum);
+      background: #fff;
+      border: 2px solid var(--line);
+      border-radius: 12px;
+      padding: 11px 13px;
+      transition: border .14s;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      outline: none;
+      border-color: var(--rose)
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 60px
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 22px;
+      flex-wrap: wrap
+    }
+
+    .seg {
+      display: flex;
+      gap: 8px;
+      background: var(--blush);
+      padding: 5px;
+      border-radius: 14px;
+      margin-bottom: 6px
+    }
+
+    .seg button {
+      flex: 1;
+      padding: 10px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--plum-soft)
+    }
+
+    .seg button.on {
+      background: #fff;
+      color: var(--rose-deep);
+      box-shadow: 0 2px 7px var(--shadow)
+    }
+
+    /* ============== CARD EDITOR ROWS ============== */
+    .editor-row {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px;
+      margin-bottom: 13px;
+      position: relative
+    }
+
+    .editor-row .num {
+      position: absolute;
+      top: -10px;
+      left: 14px;
+      background: var(--rose);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 800;
+      padding: 2px 10px;
+      border-radius: 8px;
+      letter-spacing: .5px
+    }
+
+    .editor-row .row-del {
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      color: var(--plum-soft);
+      font-weight: 800;
+      font-size: 18px
+    }
+
+    .editor-row .row-del:hover {
+      color: var(--rose)
+    }
+
+    .two {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 6px
+    }
+
+    @media(max-width:520px) {
+      .two {
+        grid-template-columns: 1fr
+      }
+    }
+
+    .imgdrop {
+      margin-top: 10px
+    }
+
+    .imgdrop .imgbtn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--rose-deep);
+      background: var(--blush);
+      padding: 7px 12px;
+      border-radius: 10px
+    }
+
+    .imgdrop .imgbtn:hover {
+      background: #f6d3da
+    }
+
+    .imgthumb {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 5px 8px;
+      font-size: 13px;
+      font-weight: 600
+    }
+
+    .imgthumb img {
+      height: 34px;
+      border-radius: 6px
+    }
+
+    .imgthumb button {
+      color: var(--rose);
+      font-weight: 800
+    }
+
+    .add-card {
+      width: 100%;
+      padding: 14px;
+      border: 2.5px dashed var(--line);
+      border-radius: 14px;
+      color: var(--plum-soft);
+      font-weight: 800;
+      font-size: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 4px
+    }
+
+    .add-card:hover {
+      border-color: var(--rose);
+      color: var(--rose-deep)
+    }
+
+    .hint {
+      font-size: 13px;
+      color: var(--plum-soft);
+      font-weight: 600;
+      background: var(--blush);
+      padding: 11px 13px;
+      border-radius: 11px;
+      margin-top: 8px
+    }
+
+    .hint code {
+      background: #fff;
+      padding: 1px 6px;
+      border-radius: 5px;
+      font-size: 12px
+    }
+
+    /* ============== STUDY MODE ============== */
+    .study-top {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+      flex-wrap: wrap
+    }
+
+    .progress {
+      flex: 1;
+      min-width: 140px
+    }
+
+    .progress .bar {
+      height: 11px;
+      background: var(--blush);
+      border-radius: 99px;
+      overflow: hidden
+    }
+
+    .progress .fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--rose), var(--gold));
+      border-radius: 99px;
+      transition: width .3s
+    }
+
+    .progress .lbl {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--plum-soft);
+      margin-top: 6px;
+      display: flex;
+      justify-content: space-between
+    }
+
+    .tally {
+      display: flex;
+      gap: 8px
+    }
+
+    .chip {
+      font-size: 13px;
+      font-weight: 800;
+      padding: 6px 12px;
+      border-radius: 99px
+    }
+
+    .chip.k {
+      background: #e4efdc;
+      color: var(--sage-deep)
+    }
+
+    .chip.u {
+      background: #fbe0e5;
+      color: var(--rose-deep)
+    }
+
+    .stage {
+      perspective: 1600px;
+      margin: 8px auto 18px;
+      max-width: 600px
+    }
+
+    .flip {
+      position: relative;
+      width: 100%;
+      min-height: 340px;
+      transform-style: preserve-3d;
+      transition: transform .6s cubic-bezier(.4, .18, .2, 1);
+      cursor: pointer
+    }
+
+    .flip.flipped {
+      transform: rotateY(180deg)
+    }
+
+    .face {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      background: #fff;
+      border-radius: 22px;
+      box-shadow: 0 14px 34px var(--shadow);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 34px;
+      text-align: center;
+      border: 1px solid #fff
+    }
+
+    .face::after {
+      content: "";
+      position: absolute;
+      top: 13px;
+      left: 13px;
+      right: 13px;
+      bottom: 13px;
+      border: 1.5px dashed var(--line);
+      border-radius: 15px;
+      pointer-events: none
+    }
+
+    .face .tag {
+      position: absolute;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--gold)
+    }
+
+    .face .txt {
+      font-family: 'Fraunces', serif;
+      font-size: 27px;
+      font-weight: 600;
+      line-height: 1.3;
+      word-break: break-word
+    }
+
+    .face img {
+      max-height: 170px;
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 5px 14px var(--shadow)
+    }
+
+    .back {
+      transform: rotateY(180deg)
+    }
+
+    .back .tag {
+      color: var(--rose)
+    }
+
+    .tap-hint {
+      position: absolute;
+      bottom: 16px;
+      left: 0;
+      right: 0;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--plum-soft);
+      letter-spacing: .5px
+    }
+
+    .judge {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      margin-top: 4px
+    }
+
+    .judge button {
+      flex: 1;
+      max-width: 200px;
+      padding: 16px;
+      border-radius: 16px;
+      font-weight: 800;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: transform .12s, box-shadow .12s
+    }
+
+    .judge button:active {
+      transform: translateY(2px)
+    }
+
+    .judge .know {
+      background: #e4efdc;
+      color: var(--sage-deep);
+      box-shadow: 0 5px 14px rgba(124, 155, 110, .3)
+    }
+
+    .judge .know:hover {
+      background: #d6e8c9
+    }
+
+    .judge .dunno {
+      background: #fbe0e5;
+      color: var(--rose-deep);
+      box-shadow: 0 5px 14px rgba(210, 107, 130, .25)
+    }
+
+    .judge .dunno:hover {
+      background: #f8d2da
+    }
+
+    /* results */
+    .results {
+      text-align: center;
+      background: #fff;
+      border-radius: 22px;
+      padding: 40px 28px;
+      box-shadow: 0 12px 30px var(--shadow);
+      max-width: 560px;
+      margin: 10px auto
+    }
+
+    .results .score {
+      font-family: 'Fraunces', serif;
+      font-size: 58px;
+      font-weight: 700;
+      color: var(--rose-deep);
+      line-height: 1
+    }
+
+    .results h2 {
+      font-family: 'Fraunces', serif;
+      font-size: 26px;
+      margin: 10px 0 6px
+    }
+
+    .results p {
+      color: var(--plum-soft);
+      font-weight: 600;
+      margin-bottom: 22px
+    }
+
+    .results .row {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap
+    }
+
+    /* settings list */
+    .set-group {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 6px 16px;
+      margin-bottom: 14px
+    }
+
+    .set-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 15px 0;
+      border-bottom: 1px solid var(--line)
+    }
+
+    .set-row:last-child {
+      border-bottom: none
+    }
+
+    .set-row .info b {
+      font-weight: 800;
+      font-size: 15px
+    }
+
+    .set-row .info span {
+      display: block;
+      font-size: 13px;
+      color: var(--plum-soft);
+      font-weight: 600;
+      margin-top: 2px
+    }
+
+    .switch {
+      position: relative;
+      width: 50px;
+      height: 28px;
+      flex: none
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0
+    }
+
+    .switch .track {
+      position: absolute;
+      inset: 0;
+      background: var(--line);
+      border-radius: 99px;
+      transition: .2s
+    }
+
+    .switch .track::before {
+      content: "";
+      position: absolute;
+      height: 22px;
+      width: 22px;
+      left: 3px;
+      top: 3px;
+      background: #fff;
+      border-radius: 50%;
+      transition: .2s;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, .2)
+    }
+
+    .switch input:checked+.track {
+      background: var(--sage)
+    }
+
+    .switch input:checked+.track::before {
+      transform: translateX(22px)
+    }
+
+    .set-seg {
+      display: flex;
+      gap: 6px
+    }
+
+    .set-seg button {
+      padding: 8px 13px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 13.5px;
+      background: var(--blush);
+      color: var(--plum-soft)
+    }
+
+    .set-seg button.on {
+      background: var(--rose);
+      color: #fff
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      opacity: 0;
+      background: var(--plum);
+      color: #fff;
+      font-weight: 700;
+      font-size: 14px;
+      padding: 12px 20px;
+      border-radius: 13px;
+      z-index: 100;
+      transition: .25s;
+      pointer-events: none
+    }
+
+    .toast.on {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0)
+    }
+
+    .hidden {
+      display: none !important
+    }
+
+    input[type=file] {
+      display: none
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .flip {
+        transition: none
+      }
+
+      .tile:hover {
+        transform: none
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+
+    <header class="app">
+      <div class="logo">🌸</div>
+      <div class="brand">
+        <h1>Sophia's Studies</h1>
+        <p>Custom flashcard maker for Sophia to pass her finals.</p>
+      </div>
+      <div class="spacer"></div>
+      <button class="btn btn-ghost btn-sm" id="exportBtn" title="Save a backup file">💾 Backup</button>
+      <button class="btn btn-ghost btn-sm" id="importBtn" title="Load a backup file">📂 Restore</button>
+    </header>
+
+    <!-- ====== BROWSE VIEW ====== -->
+    <section id="browse">
+      <div class="crumb" id="crumb"></div>
+      <div class="grid" id="grid"></div>
+    </section>
+
+    <!-- ====== STUDY VIEW ====== -->
+    <section id="study" class="hidden">
+      <div class="crumb"><a id="exitStudy">← Back to deck</a></div>
+      <div class="study-top">
+        <div class="progress">
+          <div class="bar">
+            <div class="fill" id="pfill" style="width:0%"></div>
+          </div>
+          <div class="lbl"><span id="pcount">0 / 0</span><span id="proundlbl"></span></div>
+        </div>
+        <div class="tally">
+          <span class="chip k" id="ktally">✓ 0</span>
+          <span class="chip u" id="utally">↻ 0</span>
+        </div>
+        <button class="btn btn-ghost btn-icon" id="studySettings" title="Study settings">⚙️</button>
+      </div>
+
+      <div class="stage">
+        <div class="flip" id="flip">
+          <div class="face front">
+            <span class="tag" id="frontTag">TERM</span>
+            <img id="frontImg" class="hidden" alt="">
+            <div class="txt" id="frontTxt"></div>
+            <span class="tap-hint">tap to flip</span>
+          </div>
+          <div class="face back">
+            <span class="tag" id="backTag">DEFINITION</span>
+            <img id="backImg" class="hidden" alt="">
+            <div class="txt" id="backTxt"></div>
+            <span class="tap-hint">tap to flip back</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="judge">
+        <button class="dunno" id="markUnknown">↻ Still learning</button>
+        <button class="know" id="markKnown">✓ Got it</button>
+      </div>
+    </section>
+
+    <!-- ====== RESULTS VIEW ====== -->
+    <section id="resultsView" class="hidden">
+      <div class="results">
+        <div class="score" id="rScore">0%</div>
+        <h2 id="rTitle">Nice work!</h2>
+        <p id="rSub"></p>
+        <div class="row" id="rRow"></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ====== DECK/FOLDER MODAL ====== -->
+  <div class="scrim" id="makeScrim">
+    <div class="modal" id="makeModal"></div>
+  </div>
+
+  <!-- ====== STUDY SETTINGS MODAL ====== -->
+  <div class="scrim" id="setScrim">
+    <div class="modal" id="setModal"></div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <input type="file" id="restoreFile" accept="application/json">
+
+  <script>
+    /* =========================================================
+       PETAL — single-file flashcard study app
+       Data model:
+         state.items = [ {id,type:'folder'|'deck', name, emoji, parent, cards?[]} ]
+         card = { term, def, termImg, defImg }   (imgs = dataURL or '')
+       Persistence: localStorage (auto) + JSON backup/restore files
+       ========================================================= */
+
+    const LS_KEY = 'petal.v1';
+    const $ = s => document.querySelector(s);
+    const uid = () => Math.random().toString(36).slice(2, 9);
+
+    const DEFAULT_SETTINGS = {
+      show: 'term',        // which side faces up first: term | def
+      shuffle: true,       // randomize order
+      retryUnknown: true,  // loop unknowns until cleared
+      autoFlipBack: true   // reset flip on next card
+    };
+
+    let state = load();
+    let view = { folder: null };        // current folder id (null = home)
+    let study = null;                  // active study session
+
+    function load() {
+      try {
+        const raw = JSON.parse(localStorage.getItem(LS_KEY));
+        if (raw && raw.items) return { items: raw.items, settings: { ...DEFAULT_SETTINGS, ...(raw.settings || {}) } };
+      } catch (e) { }
+      return { items: seed(), settings: { ...DEFAULT_SETTINGS } };
+    }
+    function save() { localStorage.setItem(LS_KEY, JSON.stringify(state)); }
+
+    function seed() {
+      const d = uid();
+      return [{
+        id: d, type: 'deck', name: 'Welcome Deck', emoji: '🌷', parent: null,
+        cards: [
+          { term: 'Petal', def: 'Your cozy place to make and study flashcards.', termImg: '', defImg: '' },
+          { term: 'Tap a card', def: 'It flips with a gentle animation to reveal the other side.', termImg: '', defImg: '' },
+          { term: '“Still learning” pile', def: 'Cards you miss come back around until you know them.', termImg: '', defImg: '' }
+        ]
+      }];
+    }
+
+    /* ---------- helpers ---------- */
+    const EMOJIS = ['🌸', '🌷', '🌹', '📕', '📗', '📘', '✏️', '📒', '🪻', '🍓', '☕', '🧸'];
+    const pick = a => a[Math.floor(Math.random() * a.length)];
+    function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('on'), 1900); }
+    function childrenOf(pid) { return state.items.filter(i => i.parent === pid); }
+    function getItem(id) { return state.items.find(i => i.id === id); }
+
+    /* =========================================================
+       BROWSE / NAVIGATION
+       ========================================================= */
+    function renderBrowse() {
+      show('browse');
+      // breadcrumb
+      const cb = $('#crumb'); cb.innerHTML = '';
+      const path = []; let cur = view.folder;
+      while (cur) { const it = getItem(cur); if (!it) break; path.unshift(it); cur = it.parent; }
+      const home = document.createElement('a'); home.textContent = '🏠 Home'; home.onclick = () => { view.folder = null; renderBrowse(); }; cb.appendChild(home);
+      path.forEach(it => {
+        cb.appendChild(document.createTextNode(' › '));
+        const a = document.createElement('a'); a.textContent = it.emoji + ' ' + it.name;
+        a.onclick = () => { view.folder = it.id; renderBrowse(); }; cb.appendChild(a);
+      });
+
+      const grid = $('#grid'); grid.innerHTML = '';
+      const kids = childrenOf(view.folder);
+
+      // "new" tiles
+      grid.appendChild(newTile('＋', 'New deck', () => openDeckMaker()));
+      grid.appendChild(newTile('🗂', 'New folder', () => openFolderMaker()));
+
+      if (kids.length === 0 && childrenOf(view.folder).length === 0) {
+        // (handled below by empty note if truly nothing)
+      }
+
+      kids.sort((a, b) => (a.type === b.type ? 0 : a.type === 'folder' ? -1 : 1));
+      kids.forEach(it => grid.appendChild(it.type === 'folder' ? folderTile(it) : deckTile(it)));
+
+      if (kids.length === 0) {
+        const e = document.createElement('div'); e.className = 'empty'; e.style.gridColumn = '1/-1';
+        e.innerHTML = '<div class="big">🌱</div><p>Nothing here yet. Make your first deck above!</p>';
+        grid.appendChild(e);
+      }
+    }
+
+    function newTile(plus, label, fn) {
+      const t = document.createElement('div'); t.className = 'tile new-tile';
+      t.innerHTML = `<div class="plus">${plus}</div><span>${label}</span>`; t.onclick = fn; return t;
+    }
+    function folderTile(it) {
+      const n = childrenOf(it.id).length;
+      const t = document.createElement('div'); t.className = 'tile folder';
+      t.innerHTML = `<div class="tape"></div><div class="emoji">${it.emoji}</div>
+    <div class="kind">Folder</div><h3>${esc(it.name)}</h3>
+    <div class="meta">${n} item${n !== 1 ? 's' : ''}</div>
+    <button class="del" title="Delete">✕</button>`;
+      t.onclick = () => { view.folder = it.id; renderBrowse(); };
+      t.querySelector('.del').onclick = e => { e.stopPropagation(); confirmDelete(it); };
+      return t;
+    }
+    function deckTile(it) {
+      const n = it.cards.length;
+      const t = document.createElement('div'); t.className = 'tile';
+      t.innerHTML = `<div class="tape"></div><div class="emoji">${it.emoji}</div>
+    <div class="kind">Deck</div><h3>${esc(it.name)}</h3>
+    <div class="meta">${n} card${n !== 1 ? 's' : ''}</div>
+    <button class="del" title="Delete">✕</button>`;
+      t.onclick = () => { if (n === 0) { openDeckMaker(it); toast('This deck is empty — add some cards!'); } else startStudy(it); };
+      t.querySelector('.del').onclick = e => { e.stopPropagation(); confirmDelete(it); };
+      return t;
+    }
+
+    function confirmDelete(it) {
+      const kind = it.type === 'folder' ? 'folder (and everything inside it)' : 'deck';
+      if (!confirm(`Delete “${it.name}”? This removes the ${kind}.`)) return;
+      const toRemove = new Set([it.id]);
+      let added = true; while (added) {
+        added = false;
+        state.items.forEach(x => { if (toRemove.has(x.parent) && !toRemove.has(x.id)) { toRemove.add(x.id); added = true; } });
+      }
+      state.items = state.items.filter(x => !toRemove.has(x.id));
+      save(); renderBrowse(); toast('Deleted');
+    }
+
+    /* =========================================================
+       FOLDER MAKER
+       ========================================================= */
+    function openFolderMaker() {
+      const m = $('#makeModal');
+      m.innerHTML = `
+    <h2>New folder</h2>
+    <p class="sub">Group related decks together — like “Biology Final”.</p>
+    <label class="field">Folder name</label>
+    <input type="text" id="fName" placeholder="e.g. Biology Final" maxlength="40">
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="fCancel">Cancel</button>
+      <button class="btn btn-rose" id="fSave">Create folder</button>
+    </div>`;
+      openScrim('#makeScrim'); setTimeout(() => $('#fName').focus(), 50);
+      $('#fCancel').onclick = closeScrims;
+      $('#fSave').onclick = () => {
+        const name = $('#fName').value.trim(); if (!name) { $('#fName').focus(); return; }
+        state.items.push({ id: uid(), type: 'folder', name, emoji: pick(['🗂', '📁', '🌼', '🧺', '🎀']), parent: view.folder });
+        save(); closeScrims(); renderBrowse(); toast('Folder created');
+      };
+      $('#fName').onkeydown = e => { if (e.key === 'Enter') $('#fSave').click(); };
+    }
+
+    /* =========================================================
+       DECK MAKER  (manual builder + CSV import)
+       ========================================================= */
+    let draft = null; // {name, cards:[...]}
+
+    function openDeckMaker(existing) {
+      draft = existing
+        ? { id: existing.id, name: existing.name, cards: existing.cards.map(c => ({ ...c })) }
+        : { id: null, name: '', cards: [blankCard(), blankCard(), blankCard()] };
+      renderDeckMaker('build');
+      openScrim('#makeScrim');
+    }
+    function blankCard() { return { term: '', def: '', termImg: '', defImg: '' }; }
+
+    function renderDeckMaker(mode) {
+      const m = $('#makeModal');
+      m.innerHTML = `
+    <h2>${draft.id ? 'Edit deck' : 'New deck'}</h2>
+    <p class="sub">Build cards by hand, or import a CSV.</p>
+    <label class="field">Deck name</label>
+    <input type="text" id="dName" placeholder="e.g. Spanish Vocab — Ch.5" maxlength="50" value="${esc(draft.name)}">
+
+    <div class="seg" style="margin-top:16px">
+      <button id="tabBuild" class="${mode === 'build' ? 'on' : ''}">✏️ Build cards</button>
+      <button id="tabImport" class="${mode === 'import' ? 'on' : ''}">📄 Import CSV</button>
+    </div>
+
+    <div id="builderPane" class="${mode === 'build' ? '' : 'hidden'}">
+      <div id="cardRows" style="margin-top:14px"></div>
+      <button class="add-card" id="addCard">＋ Add card</button>
+    </div>
+
+    <div id="importPane" class="${mode === 'import' ? '' : 'hidden'}">
+      <div class="hint">
+        Paste rows or choose a <code>.csv</code> file. Format per line:<br>
+        <code>term, definition</code> &nbsp;or&nbsp; <code>term, definition, image-url</code><br>
+        First row is skipped if it looks like a header.
+      </div>
+      <label class="field">Choose a CSV file</label>
+      <button class="btn btn-ghost" id="csvPick">📄 Pick CSV file…</button>
+      <input type="file" id="csvFile" accept=".csv,text/csv">
+      <label class="field">…or paste here</label>
+      <textarea id="csvText" rows="6" placeholder="photosynthesis, process plants use to make food&#10;mitochondria, the powerhouse of the cell"></textarea>
+      <button class="btn btn-ghost btn-sm" id="csvLoad" style="margin-top:10px">Load these cards →</button>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="dCancel">Cancel</button>
+      <button class="btn btn-rose" id="dDone">Done</button>
+    </div>`;
+
+      $('#tabBuild').onclick = () => { syncDraftName(); renderDeckMaker('build'); };
+      $('#tabImport').onclick = () => { syncDraftName(); renderDeckMaker('import'); };
+      $('#dCancel').onclick = () => { if (confirm('Discard this deck?')) closeScrims(); };
+      $('#dDone').onclick = finishDeck;
+      $('#dName').oninput = () => draft.name = $('#dName').value;
+
+      if (mode === 'build') {
+        renderRows();
+        $('#addCard').onclick = () => {
+          syncRows(); draft.cards.push(blankCard()); renderRows();
+          $('#cardRows').lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        };
+      } else {
+        $('#csvPick').onclick = () => $('#csvFile').click();
+        $('#csvFile').onchange = e => {
+          const f = e.target.files[0]; if (!f) return;
+          const r = new FileReader(); r.onload = () => { $('#csvText').value = r.result; }; r.readAsText(f);
+        };
+        $('#csvLoad').onclick = loadCSV;
+      }
+    }
+    function syncDraftName() { const el = $('#dName'); if (el) draft.name = el.value; }
+
+    function renderRows() {
+      const wrap = $('#cardRows'); wrap.innerHTML = '';
+      draft.cards.forEach((c, i) => {
+        const row = document.createElement('div'); row.className = 'editor-row';
+        row.innerHTML = `
+      <span class="num">CARD ${i + 1}</span>
+      <button class="row-del" data-i="${i}" title="Remove">×</button>
+      <div class="two">
+        <div>
+          <textarea class="ta-term" data-i="${i}" placeholder="Term / front">${esc(c.term)}</textarea>
+          <div class="imgdrop">
+            <button class="imgbtn" data-side="term" data-i="${i}">🖼 ${c.termImg ? 'Change' : 'Add'} image</button>
+            <div class="thumb-term" data-i="${i}">${thumbHTML(c.termImg, 'term', i)}</div>
+          </div>
+        </div>
+        <div>
+          <textarea class="ta-def" data-i="${i}" placeholder="Definition / back">${esc(c.def)}</textarea>
+          <div class="imgdrop">
+            <button class="imgbtn" data-side="def" data-i="${i}">🖼 ${c.defImg ? 'Change' : 'Add'} image</button>
+            <div class="thumb-def" data-i="${i}">${thumbHTML(c.defImg, 'def', i)}</div>
+          </div>
+        </div>
+      </div>`;
+        wrap.appendChild(row);
+      });
+      wrap.querySelectorAll('.row-del').forEach(b => b.onclick = () => {
+        syncRows(); draft.cards.splice(+b.dataset.i, 1);
+        if (draft.cards.length === 0) draft.cards.push(blankCard()); renderRows();
+      });
+      wrap.querySelectorAll('.imgbtn').forEach(b => b.onclick = () => pickImage(+b.dataset.i, b.dataset.side));
+      wrap.querySelectorAll('.thumb-x').forEach(b => b.onclick = () => { const { i, side } = b.dataset; draft.cards[+i][side + 'Img'] = ''; renderRows(); });
+    }
+    function thumbHTML(data, side, i) {
+      if (!data) return '';
+      return `<span class="imgthumb"><img src="${data}" alt=""><button class="thumb-x" data-i="${i}" data-side="${side}">remove</button></span>`;
+    }
+    function syncRows() {
+      document.querySelectorAll('.ta-term').forEach(t => draft.cards[+t.dataset.i].term = t.value);
+      document.querySelectorAll('.ta-def').forEach(t => draft.cards[+t.dataset.i].def = t.value);
+    }
+    function pickImage(i, side) {
+      syncRows();
+      const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*';
+      inp.onchange = () => {
+        const f = inp.files[0]; if (!f) return;
+        if (f.size > 2.5 * 1024 * 1024) { toast('Image is large — try one under ~2 MB'); }
+        const r = new FileReader(); r.onload = () => { draft.cards[i][side + 'Img'] = r.result; renderRows(); }; r.readAsDataURL(f);
+      };
+      inp.click();
+    }
+
+    /* CSV parser — handles quotes, commas, 2 or 3 columns */
+    function parseCSV(text) {
+      const rows = []; let field = '', row = [], q = false;
+      for (let k = 0; k < text.length; k++) {
+        const ch = text[k];
+        if (q) { if (ch === '"') { if (text[k + 1] === '"') { field += '"'; k++; } else q = false; } else field += ch; }
+        else {
+          if (ch === '"') q = true;
+          else if (ch === ',') { row.push(field); field = ''; }
+          else if (ch === '\n' || ch === '\r') { if (ch === '\r' && text[k + 1] === '\n') k++; row.push(field); rows.push(row); row = []; field = ''; }
+          else field += ch;
+        }
+      }
+      if (field.length || row.length) { row.push(field); rows.push(row); }
+      return rows.filter(r => r.some(c => c.trim() !== ''));
+    }
+    function loadCSV() {
+      const txt = $('#csvText').value;
+      if (!txt.trim()) { toast('Paste some rows or pick a file first'); return; }
+      let rows = parseCSV(txt);
+      if (rows.length === 0) { toast('No rows found'); return; }
+      // header detection
+      const h = rows[0].map(c => c.trim().toLowerCase());
+      if (h[0] === 'term' || h[0] === 'front' || h[1] === 'definition' || h[1] === 'back' || h[1] === 'def') rows = rows.slice(1);
+      const cards = rows.map(r => ({
+        term: (r[0] || '').trim(), def: (r[1] || '').trim(),
+        termImg: '', defImg: (r[2] && /^https?:\/\//i.test(r[2].trim())) ? r[2].trim() : ''
+      })).filter(c => c.term || c.def);
+      if (cards.length === 0) { toast('Couldn’t read any cards'); return; }
+      draft.cards = cards;
+      syncDraftName();
+      renderDeckMaker('build');
+      toast(`Loaded ${cards.length} card${cards.length !== 1 ? 's' : ''} ✨`);
+    }
+
+    function finishDeck() {
+      syncDraftName(); if ($('#cardRows')) syncRows();
+      const name = (draft.name || '').trim();
+      const cards = draft.cards.filter(c => (c.term && c.term.trim()) || (c.def && c.def.trim()) || c.termImg || c.defImg);
+      if (!name) { toast('Give your deck a name first'); $('#dName')?.focus(); return; }
+      if (cards.length === 0) { toast('Add at least one card'); return; }
+      if (draft.id) {
+        const it = getItem(draft.id); it.name = name; it.cards = cards;
+      } else {
+        state.items.push({ id: uid(), type: 'deck', name, emoji: pick(EMOJIS), parent: view.folder, cards });
+      }
+      save(); closeScrims(); renderBrowse(); toast('Deck saved 🌸');
+    }
+
+    /* =========================================================
+       STUDY SESSION
+       ========================================================= */
+    function startStudy(deck) {
+      const s = state.settings;
+      let order = deck.cards.map((c, i) => i);
+      if (s.shuffle) shuffle(order);
+      study = {
+        deck, settings: { ...s }, queue: order.slice(), round: 1,
+        known: new Set(), unknownThisRound: [], total: deck.cards.length, seen: 0
+      };
+      show('study'); renderCard();
+    }
+    function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[a[i], a[j]] = [a[j], a[i]]; } }
+
+    function renderCard() {
+      const s = study; const flip = $('#flip'); flip.classList.remove('flipped');
+      if (s.queue.length === 0) { endRoundOrFinish(); return; }
+      const idx = s.queue[0]; const card = s.deck.cards[idx];
+      const frontIsTerm = s.settings.show === 'term';
+      const A = frontIsTerm ? { txt: card.term, img: card.termImg, tag: 'TERM' } : { txt: card.def, img: card.defImg, tag: 'DEFINITION' };
+      const B = frontIsTerm ? { txt: card.def, img: card.defImg, tag: 'DEFINITION' } : { txt: card.term, img: card.termImg, tag: 'TERM' };
+      fillFace('front', A); fillFace('back', B);
+
+      const done = s.total - remainingUnique();
+      $('#pfill').style.width = (s.total ? (s.known.size / s.total * 100) : 0) + '%';
+      $('#pcount').textContent = `${s.known.size} / ${s.total} learned`;
+      $('#proundlbl').textContent = s.round > 1 ? `round ${s.round}` : '';
+      $('#ktally').textContent = '✓ ' + s.known.size;
+      $('#utally').textContent = '↻ ' + s.unknownThisRound.length;
+    }
+    function fillFace(which, d) {
+      $('#' + which + 'Tag').textContent = d.tag;
+      const img = $('#' + which + 'Img'); const txt = $('#' + which + 'Txt');
+      if (d.img) { img.src = d.img; img.classList.remove('hidden'); } else img.classList.add('hidden');
+      txt.textContent = d.txt || ''; txt.style.display = d.txt ? '' : 'none';
+    }
+    function remainingUnique() { // cards not yet known
+      return study.total - study.known.size;
+    }
+    function judge(known) {
+      const s = study; const idx = s.queue.shift();
+      if (known) s.known.add(idx);
+      else if (!s.unknownThisRound.includes(idx)) s.unknownThisRound.push(idx);
+      renderCard();
+    }
+    function endRoundOrFinish() {
+      const s = study;
+      if (s.settings.retryUnknown && s.unknownThisRound.length > 0) {
+        s.round++; s.queue = s.unknownThisRound.slice();
+        if (s.settings.shuffle) shuffle(s.queue);
+        s.unknownThisRound = [];
+        toast(`Round ${s.round}: ${s.queue.length} to review ↻`);
+        renderCard();
+      } else {
+        finishStudy();
+      }
+    }
+    function finishStudy() {
+      const s = study; const pct = s.total ? Math.round(s.known.size / s.total * 100) : 0;
+      show('resultsView');
+      $('#rScore').textContent = pct + '%';
+      const great = pct >= 90, good = pct >= 60;
+      $('#rTitle').textContent = great ? 'You nailed it! 🌟' : good ? 'Great progress! 🌷' : 'Keep going — you’ve got this 🌱';
+      $('#rSub').textContent = `You learned ${s.known.size} of ${s.total} card${s.total !== 1 ? 's' : ''} in ${s.round} round${s.round !== 1 ? 's' : ''}.`;
+      const row = $('#rRow'); row.innerHTML = '';
+      const again = document.createElement('button'); again.className = 'btn btn-rose'; again.textContent = '🔁 Study again';
+      again.onclick = () => startStudy(s.deck); row.appendChild(again);
+      const back = document.createElement('button'); back.className = 'btn btn-ghost'; back.textContent = '← Back to decks';
+      back.onclick = () => { study = null; renderBrowse(); }; row.appendChild(back);
+    }
+
+    /* =========================================================
+       STUDY SETTINGS MODAL
+       ========================================================= */
+    function openSettings() {
+      const s = state.settings; const m = $('#setModal');
+      m.innerHTML = `
+    <h2>Study settings ⚙️</h2>
+    <p class="sub">Tune how cards are shown. Changes apply to your next round.</p>
+
+    <div class="set-group">
+      <div class="set-row">
+        <div class="info"><b>Show this side first</b><span>Practice recalling the other side</span></div>
+        <div class="set-seg" id="sgShow">
+          <button data-v="term" class="${s.show === 'term' ? 'on' : ''}">Term</button>
+          <button data-v="def" class="${s.show === 'def' ? 'on' : ''}">Definition</button>
+        </div>
+      </div>
+      <div class="set-row">
+        <div class="info"><b>Shuffle cards</b><span>Random order each round</span></div>
+        <label class="switch"><input type="checkbox" id="sgShuffle" ${s.shuffle ? 'checked' : ''}><span class="track"></span></label>
+      </div>
+      <div class="set-row">
+        <div class="info"><b>Retry “still learning”</b><span>Loop missed cards until you know them all</span></div>
+        <label class="switch"><input type="checkbox" id="sgRetry" ${s.retryUnknown ? 'checked' : ''}><span class="track"></span></label>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-rose" id="setDone">Done</button>
+    </div>`;
+      openScrim('#setScrim');
+      m.querySelectorAll('#sgShow button').forEach(b => b.onclick = () => { state.settings.show = b.dataset.v; save(); openSettings(); });
+      $('#sgShuffle').onchange = e => { state.settings.shuffle = e.target.checked; save(); };
+      $('#sgRetry').onchange = e => { state.settings.retryUnknown = e.target.checked; save(); };
+      $('#setDone').onclick = () => {
+        closeScrims(); if (study) { // apply live to current session settings
+          study.settings = { ...state.settings }; renderCard();
+        }
+      };
+    }
+
+    /* =========================================================
+       BACKUP / RESTORE
+       ========================================================= */
+    function doExport() {
+      const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob); const a = document.createElement('a');
+      const d = new Date().toISOString().slice(0, 10);
+      a.href = url; a.download = `petal-backup-${d}.json`; a.click(); URL.revokeObjectURL(url);
+      toast('Backup saved to Downloads');
+    }
+    function doImport(file) {
+      const r = new FileReader();
+      r.onload = () => {
+        try {
+          const data = JSON.parse(r.result);
+          if (!data.items) throw 0;
+          if (!confirm('Restore will replace your current decks with the backup. Continue?')) return;
+          state = { items: data.items, settings: { ...DEFAULT_SETTINGS, ...(data.settings || {}) } };
+          save(); view.folder = null; renderBrowse(); toast('Backup restored 🌸');
+        } catch (e) { toast('That doesn’t look like a Petal backup'); }
+      };
+      r.readAsText(file);
+    }
+
+    /* =========================================================
+       VIEW + MODAL PLUMBING
+       ========================================================= */
+    function show(id) { ['browse', 'study', 'resultsView'].forEach(v => $('#' + v).classList.toggle('hidden', v !== id)); }
+    function openScrim(sel) { $(sel).classList.add('on'); }
+    function closeScrims() { $('#makeScrim').classList.remove('on'); $('#setScrim').classList.remove('on'); }
+    function esc(s) { return (s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+
+    /* events */
+    $('#flip').onclick = () => $('#flip').classList.toggle('flipped');
+    $('#markKnown').onclick = () => judge(true);
+    $('#markUnknown').onclick = () => judge(false);
+    $('#exitStudy').onclick = () => { study = null; renderBrowse(); };
+    $('#studySettings').onclick = openSettings;
+    $('#exportBtn').onclick = doExport;
+    $('#importBtn').onclick = () => $('#restoreFile').click();
+    $('#restoreFile').onchange = e => { const f = e.target.files[0]; if (f) doImport(f); e.target.value = ''; };
+    document.querySelectorAll('.scrim').forEach(sc => sc.onclick = e => { if (e.target === sc) { if (sc.id === 'makeScrim') { /* require explicit cancel */ } else closeScrims(); } });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeScrims();
+      if (!$('#study').classList.contains('hidden') && !$('#makeScrim').classList.contains('on') && !$('#setScrim').classList.contains('on')) {
+        if (e.key === ' ') { e.preventDefault(); $('#flip').classList.toggle('flipped'); }
+        if (e.key === 'ArrowRight' || e.key.toLowerCase() === 'k') judge(true);
+        if (e.key === 'ArrowLeft' || e.key.toLowerCase() === 'j') judge(false);
+      }
+    });
+
+    /* go */
+    renderBrowse();
+  </script>
+</body>
+
+</html>
